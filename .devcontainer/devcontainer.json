@@ -2,13 +2,5 @@
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
   },
-  "name": "My Dev Container",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
-  "settings": {},
-  "extensions": [],
-  "postCreateCommand": "nohup tail -f /dev/null &",
-  "remoteUser": "vscode"
+  "shutdownAction": "none"
 }
