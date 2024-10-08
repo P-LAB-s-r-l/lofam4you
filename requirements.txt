@@ -1,0 +1,10 @@
+python-docx
+langchain-openai
+langchain
+python-dotenv
+streamlit
+langchain_google_genai
+virtualenv
+altair
+cx_Freeze
+pypandoc
