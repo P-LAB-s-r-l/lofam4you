@@ -144,5 +144,13 @@ def perform_analysis(bar, provider, model, api_key):
     bar.progress(100, "Analisi completata!")
     st.success("Analisi completata!")
 
+    with open(fullPathDocx, "rb") as file:
+        st.download_button(
+            label="Scarica documentazione e riavvia il processo",
+            data=file,
+            file_name="Documentazione.docx",
+            mime="application/docx",
+        )
+
 if __name__ == "__main__":
     lofam()
