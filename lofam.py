@@ -10,7 +10,7 @@ import pypandoc
 
 def lofam():
     st.set_page_config(page_title="LOFAM", layout="centered")
-    st.title("LOFAM - Legacy Observer For Analysis and Mitigation")
+    st.title("LOFAM - Legacy Observer For Analysis and Mitigation.")
 
     with st.status("Configurazione iniziale", expanded=True, state="running") as initial_configuration_expander:
         initialize_session_state()
