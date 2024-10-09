@@ -4,8 +4,8 @@ import tempfile
 import shutil
 import math
 import streamlit as st
-from utils.file_management import read_file_content, write_file_content, estrai_zip, comprimi_zip, has_code_extension, get_zip_structure
-from utils.config import analyze_content
+from utils.file_management import read_file_content, write_file_content, estrai_zip, comprimi_zip, has_code_extension, get_zip_structure, exclude_file
+from utils.config import analyze_content, create_migration_documentation
 
 def analizza_utilizzo_variabili(file_content):
     #VERSIONE BASE CHE CREA FILE CON VARIABILI E NUMERO DI RIGA DOVE SI TROVANO
@@ -84,31 +84,31 @@ def analyze_and_anonimize_code(zip_file_path, bar, code_extensions):
 
     # Estrazione e creazione dello zip solo codice
     bar.progress(20, "Creo lo zip con solo il codice...")
-    if not os.path.isfile(output_zip_codeonly_path):
-        extraction_directory = tempfile.mkdtemp()
-        estrai_zip(zip_file_path, extraction_directory)
-        comprimi_zip(output_zip_codeonly_path, extraction_directory)
-        shutil.rmtree(extraction_directory)
+    extraction_directory = tempfile.mkdtemp()
+    estrai_zip(zip_file_path, extraction_directory)
+    comprimi_zip(output_zip_codeonly_path, extraction_directory)
+    shutil.rmtree(extraction_directory)
 
     zip_structure = get_zip_structure(output_zip_codeonly_path)
     with st.expander("File da analizzare", expanded=False):
         for item in zip_structure:
-            st.write(item)
+            if(has_code_extension(item, code_extensions) and not exclude_file(item)):
+                st.write(item)
 
     bar.progress(30, "Anonimizzazione del codice...")
-    if not os.path.isfile(output_zip_codeonly_anonymous_path):
-        code_anonymization_directory = tempfile.mkdtemp()
-        estrai_zip(output_zip_codeonly_path, code_anonymization_directory)
+    code_anonymization_directory = tempfile.mkdtemp()
+    estrai_zip(output_zip_codeonly_path, code_anonymization_directory)
 
-        for root, dirs, files in os.walk(code_anonymization_directory):
-            for file in files:
-                file_path = os.path.join(root, file)
-                contenuto = read_file_content(file_path)
-                contenuto_anonimo = anonimizza_contenuto(contenuto)
-                write_file_content(file_path, contenuto_anonimo)
+    for root, dirs, files in os.walk(code_anonymization_directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            contenuto = read_file_content(file_path)
+            contenuto_anonimo = anonimizza_contenuto(contenuto)
+            write_file_content(file_path, contenuto_anonimo)
 
-        comprimi_zip(output_zip_codeonly_anonymous_path, code_anonymization_directory)
-        shutil.rmtree(code_anonymization_directory)
+    comprimi_zip(output_zip_codeonly_anonymous_path, code_anonymization_directory)
+    
+    shutil.rmtree(code_anonymization_directory)
 
     bar.progress(40, "Analisi delle variabili non utilizzate...")
     analyze_directory = tempfile.mkdtemp()
@@ -128,12 +128,10 @@ def analyze_and_anonimize_code(zip_file_path, bar, code_extensions):
 # Funzione per la generazione della documentazione
 def generate_documentation(analyze_directory, selected_language, code_extensions, bar, documentation_directory, provider, model, api_key):
     documentation_content = ""
-    count = 0
     for root, dirs, files in os.walk(analyze_directory):
         for file in files:
-            if has_code_extension(file, code_extensions):
+            if has_code_extension(file, code_extensions) and not exclude_file(file):
                 file_path = os.path.join(root, file)
-                count += 1
                 bar.progress(50, f"Generazione della documentazione per il file {file}...")
                 filename = os.path.basename(file_path)
                 filecontent = read_file_content(file_path)
@@ -144,3 +142,17 @@ def generate_documentation(analyze_directory, selected_language, code_extensions
                 documentation_content += documentation + "\n\n"
 
     return documentation_content
+
+def generate_migration_documentation(documentation_directory, bar, selected_language, provider, model, api_key):
+    documentation_content = ""
+    bar.progress(75, "Generazione della proposta di migrazione...")
+    file_path = os.path.join(documentation_directory, "documentazione_completa.md")
+    filecontent = read_file_content(file_path)
+    documentation = create_migration_documentation(filecontent, selected_language, provider, model, api_key)
+    with st.expander("Proposta di migrazione"):
+        st.markdown(documentation)
+    write_file_content(os.path.join(documentation_directory, "proposta_migrazione.md"), documentation)
+    documentation_content += documentation + "\n\n"
+
+    return documentation_content
+    

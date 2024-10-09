@@ -1,6 +1,6 @@
 import os
 import zipfile
-from utils.constants import CODE_EXTENSIONS
+from utils.constants import CODE_EXTENSIONS, TO_EXCLUDE
 
 def create_folder(folder_path):
     if not os.path.exists(folder_path):
@@ -26,6 +26,10 @@ def write_file_content(file_path, content):
 def has_code_extension(file_name, code_extensions):
     estensione = os.path.splitext(file_name)[1]
     return estensione in code_extensions
+
+# Funzione per escludere i file
+def exclude_file(file_name):
+    return any(exclusion in str(file_name).lower() for exclusion in TO_EXCLUDE)
 
 # Funzione per estrarre file ZIP in una cartella
 def estrai_zip(zip_path, extract_to):

@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.ui_interaction import choose_file, language_selector
-from utils.analysis_and_anon import analyze_and_anonimize_code, generate_documentation
+from utils.analysis_and_anon import analyze_and_anonimize_code, generate_documentation, generate_migration_documentation
 from utils.file_management import write_file_content
 from utils.constants import CODE_EXTENSIONS, DOCUMENTATION_FOLDER_PATH
 import os
@@ -10,7 +10,7 @@ import pypandoc
 
 def lofam():
     st.set_page_config(page_title="LOFAM", layout="centered")
-    st.title("LOFAM - Legacy Observer For Analysis and Mitigation.")
+    st.title("LOFAM - Legacy Optimization Framework Analysis and Migration")
 
     with st.status("Configurazione iniziale", expanded=True, state="running") as initial_configuration_expander:
         initialize_session_state()
@@ -81,7 +81,7 @@ def select_provider_model_and_api():
     elif provider == "Google":
         model = st.selectbox(
             "Modello",
-            ("gemini-1.5-pro", "gemini-1.5-flash"),
+            ("gemini-1.5-flash", "gemini-1.5-pro"),
             disabled=False,
         )
 
@@ -122,17 +122,27 @@ def perform_analysis(bar, provider, model, api_key):
     pypandoc.convert_file(fullPath, 'docx', outputfile=fullPathDocx)
     print(f"File convertito con successo e salvato come: {fullPathDocx}")
 
+    migration_documentation = generate_migration_documentation(
+        documentation_directory=DOCUMENTATION_FOLDER_PATH,
+        bar=bar,
+        selected_language=st.session_state.selected_language,
+        provider=provider,
+        model=model,
+        api_key=api_key
+    )
+    
+    write_file_content(os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.md"), migration_documentation)
+    
+    fullPath = os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.md")
+    fullPathDocx = os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.docx")
+
+    pypandoc.ensure_pandoc_installed()
+    pypandoc.convert_file(fullPath, 'docx', outputfile=fullPathDocx)
+    print(f"File convertito con successo e salvato come: {fullPathDocx}")
+
     shutil.rmtree(analyze_directory)
     bar.progress(100, "Analisi completata!")
     st.success("Analisi completata!")
-
-    with open(fullPathDocx, "rb") as file:
-        st.download_button(
-            label="Scarica Documentazione e riavvia il processo",
-            data=file,
-            file_name="Documentazione.docx",
-            mime="application/docx",
-        )
 
 if __name__ == "__main__":
     lofam()
