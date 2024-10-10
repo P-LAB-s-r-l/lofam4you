@@ -9,8 +9,16 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
+def setup_environment():
+    os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2")
+    os.environ["LANGCHAIN_ENDPOINT"] = os.getenv("LANGCHAIN_ENDPOINT")
+    os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
+    os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT")
 
 def setup_llm(provider, model, api_key):
+
+    setup_environment()
+    
     match provider:
         case "Google":
             return setup_google_llm(model, api_key)
