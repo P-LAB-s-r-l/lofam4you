@@ -1,3 +1,4 @@
+import zipfile
 import streamlit as st
 from utils.ui_interaction import choose_file, language_selector
 from utils.analysis_and_anon import analyze_and_anonimize_code, generate_documentation, generate_migration_documentation
@@ -140,23 +141,32 @@ def perform_analysis(bar, provider, model, api_key):
     
     write_file_content(os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.md"), migration_documentation)
     
-    fullPath = os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.md")
-    fullPathDocx = os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.docx")
+    fullMigrationPath = os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.md")
+    fullMigrationPathDocx = os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.docx")
 
     pypandoc.ensure_pandoc_installed()
-    pypandoc.convert_file(fullPath, 'docx', outputfile=fullPathDocx)
-    print(f"File convertito con successo e salvato come: {fullPathDocx}")
+    pypandoc.convert_file(fullMigrationPath, 'docx', outputfile=fullMigrationPathDocx)
+    print(f"File convertito con successo e salvato come: {fullMigrationPathDocx}")
 
     shutil.rmtree(analyze_directory)
     bar.progress(100, "Analisi completata!")
     st.success("Analisi completata!")
+    
+    output_zip_path = os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_completa_migrazione.zip")
 
-    with open(fullPathDocx, "rb") as file:
+    print(os.path.relpath(fullMigrationPathDocx))
+    print(os.path.relpath(fullPathDocx))
+
+    with zipfile.ZipFile(output_zip_path, 'w') as new_zip:
+        new_zip.write(os.path.relpath(fullMigrationPathDocx), "documentazione_migrazione_completa.docx")
+        new_zip.write(os.path.relpath(fullPathDocx), "documentazione_completa.docx")
+
+    with open(output_zip_path, "rb") as file:
         st.download_button(
             label="Scarica documentazione e riavvia il processo",
             data=file,
-            file_name="Documentazione.docx",
-            mime="application/docx",
+            file_name="Documentazione.zip",
+            mime="application/x-zip",
         )
 
 if __name__ == "__main__":
