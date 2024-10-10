@@ -144,15 +144,10 @@ def generate_documentation(analyze_directory, selected_language, code_extensions
     return documentation_content
 
 def generate_migration_documentation(documentation_directory, bar, selected_language, provider, model, api_key):
-    documentation_content = ""
     bar.progress(75, "Generazione della proposta di migrazione...")
     file_path = os.path.join(documentation_directory, "documentazione_completa.md")
     filecontent = read_file_content(file_path)
     documentation = create_migration_documentation(filecontent, selected_language, provider, model, api_key)
-    with st.expander("Proposta di migrazione"):
-        st.markdown(documentation)
-    write_file_content(os.path.join(documentation_directory, "proposta_migrazione.md"), documentation)
-    documentation_content += documentation + "\n\n"
-
-    return documentation_content
+    
+    return documentation
     

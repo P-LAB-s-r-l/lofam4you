@@ -2,11 +2,15 @@ import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
+from dotenv import load_dotenv
 from utils.constants import DOCUMENTATION_SYSTEM_PROMPT, DOCUMENTATION_STYLE, DOCUMENTATION_MIGRATION_SYSTEM_PROMPT
 from langchain_core.output_parsers import JsonOutputParser
+from pydantic import BaseModel, Field
+
+load_dotenv()
+
 
 def setup_llm(provider, model, api_key):
-
     match provider:
         case "Google":
             return setup_google_llm(model, api_key)

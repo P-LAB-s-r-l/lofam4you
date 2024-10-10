@@ -113,6 +113,10 @@ def perform_analysis(bar, provider, model, api_key):
         model=model,
         api_key=api_key
     )
+    
+    with st.expander("Documentazione completa", expanded=False):
+        st.markdown(documentation)
+        
     write_file_content(os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_completa.md"), documentation)
     
     fullPath = os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_completa.md")
@@ -130,6 +134,9 @@ def perform_analysis(bar, provider, model, api_key):
         model=model,
         api_key=api_key
     )
+    
+    with st.expander("Documentazione di migrazione", expanded=False):
+        st.markdown(migration_documentation)
     
     write_file_content(os.path.join(DOCUMENTATION_FOLDER_PATH, "documentazione_migrazione_completa.md"), migration_documentation)
     
